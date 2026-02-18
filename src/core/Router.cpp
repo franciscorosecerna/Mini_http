@@ -1,6 +1,6 @@
 #include "../include/core/Router.h"
-#include "../include/core/Request.h"
-#include "../include/core/Response.h"
+#include "../include/http/Request.h"
+#include "../include/http/Response.h"
 
 void Router::add(HttpMethod method,
                  const std::string& path,
