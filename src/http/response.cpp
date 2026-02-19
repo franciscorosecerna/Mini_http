@@ -8,6 +8,20 @@
     #define CLOSE_SOCKET close
 #endif
 
+static const char* reasonPhrase(HttpStatus status) {
+    switch (status) {
+        case HttpStatus::OK: return "OK";
+        case HttpStatus::CREATED: return "Created";
+        case HttpStatus::NO_CONTENT: return "No Content";
+        case HttpStatus::BAD_REQUEST: return "Bad Request";
+        case HttpStatus::UNAUTHORIZED: return "Unauthorized";
+        case HttpStatus::FORBIDDEN: return "Forbidden";
+        case HttpStatus::NOT_FOUND: return "Not Found";
+        case HttpStatus::INTERNAL_SERVER_ERROR: return "Internal Server Error";
+        default: return "";
+    }
+}
+
 Response::Response(socket_t socket)
     : socket_(socket),
       status_(HttpStatus::OK),
@@ -28,6 +42,9 @@ void Response::setHeader(const std::string& key,
 void Response::send(const std::string& body)
 {
     if (sent_) return;
+
+    headers_.try_emplace("Content-Type", "text/plain");
+    headers_.try_emplace("Connection", "close");
 
     std::string response = buildResponse(body);
     write(response);
@@ -50,7 +67,10 @@ std::string Response::buildResponse(const std::string& body) const
 
     int statusCode = static_cast<int>(status_);
 
-    ss << "HTTP/1.1 " << statusCode << " \r\n";
+    ss << "HTTP/1.1 "
+    << statusCode << " "
+    << reasonPhrase(status_)
+    << "\r\n";
 
     for (const auto& [key, value] : headers_) {
         ss << key << ": " << value << "\r\n";
@@ -65,11 +85,29 @@ std::string Response::buildResponse(const std::string& body) const
 
 void Response::write(const std::string& data)
 {
+    size_t totalSent = 0;
+    size_t totalSize = data.size();
+
+    while (totalSent < totalSize) {
+
 #ifdef _WIN32
-    ::send(socket_, data.c_str(),
-           static_cast<int>(data.size()), 0);
+        int sent = ::send(socket_,
+                          data.c_str() + totalSent,
+                          static_cast<int>(totalSize - totalSent),
+                          0);
 #else
-    ::send(socket_, data.c_str(),
-           data.size(), 0);
+        ssize_t sent = ::send(socket_,
+                              data.c_str() + totalSent,
+                              totalSize - totalSent,
+                              0);
 #endif
+
+        if (sent <= 0) {
+#ifndef _WIN32
+    if (errno == EINTR) continue;
+#endif
+            throw std::runtime_error("Socket send failed");
+        }
+        totalSent += sent;
+    }
 }
