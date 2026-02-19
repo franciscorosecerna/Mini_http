@@ -37,12 +37,8 @@ void TcpServer::start(ConnectionHandler handler) {
     }
 
     int opt = 1;
-    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR,
-                   reinterpret_cast<char*>(&opt), sizeof(opt)) < 0)
-    {
-        closeSocket(serverSocket);
-        throw std::runtime_error("setsockopt failed");
-    }
+    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR,
+               reinterpret_cast<char*>(&opt), sizeof(opt));
 
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
@@ -59,11 +55,11 @@ void TcpServer::start(ConnectionHandler handler) {
         throw std::runtime_error("Listen failed");
     }
 
-    running = true;
+    running.store(true);
 
     std::cout << "Server running on port " << port << "\n";
 
-    while (running) {
+    while (running.load()) {
 
         socket_t clientSocket = accept(serverSocket, nullptr, nullptr);
 
@@ -73,25 +69,29 @@ void TcpServer::start(ConnectionHandler handler) {
         if (clientSocket < 0)
 #endif
         {
-            if (running)
+            if (running.load())
                 std::cerr << "Accept failed\n";
-            continue;
+            break;
         }
 
-        pool.enqueue([this, handler, clientSocket]() {
+        try {
+            pool.enqueue([this, handler, clientSocket]() {
+                try {
+                    handler(clientSocket);
+                }
+                catch (const std::exception& e) {
+                    std::cerr << "Handler error: " << e.what() << "\n";
+                }
 
-            try {
-                handler(clientSocket);
-            }
-            catch (const std::exception& e) {
-                std::cerr << "Handler error: " << e.what() << "\n";
-            }
-
+                closeSocket(clientSocket);
+            });
+        }
+        catch (...) {
             closeSocket(clientSocket);
-        });
+        }
     }
 
-    closeSocket(serverSocket);
+    pool.shutdown();
 
 #ifdef _WIN32
     WSACleanup();
@@ -99,9 +99,8 @@ void TcpServer::start(ConnectionHandler handler) {
 }
 
 void TcpServer::stop() {
-    if (!running) return;
-
-    running = false;
+    if (!running.exchange(false))
+        return;
 
 #ifdef _WIN32
     shutdown(serverSocket, SD_BOTH);
