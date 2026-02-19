@@ -17,12 +17,6 @@ int main() {
             res.send("Hello World!");
         });
 
-        /*app.get("/users/:id", [](Request& req, Response& res) {
-            std::string id = req.params["id"];
-            res.setStatus(HttpStatus::OK);
-            res.send("User ID: " + id);
-        });*/
-
         app.get("/user/:id", [](Request& req, Response& res) {
         std::string id = req.params["id"];
         std::string jsonBody = "{ \"id\": \"" + id + "\", \"name\": \"John Cena\" }";

@@ -36,15 +36,21 @@ App::App(size_t threads) : count(threads) {}
 
 void App::listen(int port) {
     server = std::make_unique<TcpServer>(port, count);
-    server->start([this](socket_t clientSocket) {
-        handleClient(clientSocket);
+    server->start([this](Connection& conn) {
+        return handleClient(conn);
     });
 }
 
-void App::handleClient(socket_t clientSocket) {
+bool App::handleClient(Connection& conn) {
     try {
-        Request req = parseRequest(clientSocket);
-        Response res(clientSocket);
+        Request req;
+        try {
+            req = parseRequest(conn);
+        } catch (const std::runtime_error& e) {
+            return false;
+        }
+
+        Response res(conn.raw());
 
         middlewareChain.execute(req, res, [&]() {
             if (!router.dispatch(req, res)) {
@@ -52,10 +58,16 @@ void App::handleClient(socket_t clientSocket) {
                 res.send("Not Found");
             }
         });
-    }
-    catch (const std::exception& e) {
-        Response res(clientSocket);
-        res.setStatus(HttpStatus::INTERNAL_SERVER_ERROR);
-        res.send("Internal Server Error");
+
+        return req.keepAlive();
+
+    } catch (const std::exception& e) {
+        try {
+            Response res(conn.raw());
+            res.setStatus(HttpStatus::INTERNAL_SERVER_ERROR);
+            res.send("Internal Server Error");
+        } catch (...) {
+        }
+        return false;
     }
 }
