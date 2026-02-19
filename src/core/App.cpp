@@ -42,15 +42,20 @@ void App::listen(int port) {
 }
 
 void App::handleClient(socket_t clientSocket) {
+    try {
+        Request req = parseRequest(clientSocket);
+        Response res(clientSocket);
 
-    Request req = parseRequest(clientSocket);
-
-    Response res(clientSocket);
-
-    middlewareChain.execute(req, res, [&]() {
-        if (!router.dispatch(req, res)) {
-            res.setStatus(HttpStatus::NOT_FOUND);
-            res.send("Not Found");
-        }
-    });
+        middlewareChain.execute(req, res, [&]() {
+            if (!router.dispatch(req, res)) {
+                res.setStatus(HttpStatus::NOT_FOUND);
+                res.send("Not Found");
+            }
+        });
+    }
+    catch (const std::exception& e) {
+        Response res(clientSocket);
+        res.setStatus(HttpStatus::INTERNAL_SERVER_ERROR);
+        res.send("Internal Server Error");
+    }
 }

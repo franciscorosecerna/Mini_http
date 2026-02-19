@@ -123,7 +123,7 @@ void Response::write(const std::string& data)
 #ifndef _WIN32
     if (errno == EINTR) continue;
 #endif
-            throw std::runtime_error("Socket send failed");
+        throw std::runtime_error("Socket send failed");
         }
         totalSent += sent;
     }

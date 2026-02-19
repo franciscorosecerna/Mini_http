@@ -10,31 +10,31 @@ TcpServer::~TcpServer() {
 }
 
 void TcpServer::closeSocket(socket_t s) {
-#ifdef _WIN32
-    closesocket(s);
-#else
-    close(s);
-#endif
+    #ifdef _WIN32
+        closesocket(s);
+    #else
+        close(s);
+    #endif
 }
 
 void TcpServer::start(ConnectionHandler handler) {
 
-#ifdef _WIN32
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
-        throw std::runtime_error("WSAStartup failed");
-    }
-#endif
+    #ifdef _WIN32
+        WSADATA wsaData;
+        if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+            throw std::runtime_error("WSAStartup failed");
+        }
+    #endif
 
-    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-#ifdef _WIN32
-    if (serverSocket == INVALID_SOCKET)
-#else
-    if (serverSocket < 0)
-#endif
-    {
-        throw std::runtime_error("Failed to create socket");
-    }
+        serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    #ifdef _WIN32
+        if (serverSocket == INVALID_SOCKET)
+    #else
+        if (serverSocket < 0)
+    #endif
+        {
+            throw std::runtime_error("Failed to create socket");
+        }
 
     int opt = 1;
     setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR,
@@ -63,15 +63,24 @@ void TcpServer::start(ConnectionHandler handler) {
 
         socket_t clientSocket = accept(serverSocket, nullptr, nullptr);
 
-#ifdef _WIN32
-        if (clientSocket == INVALID_SOCKET)
-#else
-        if (clientSocket < 0)
-#endif
-        {
-            if (running.load())
-                std::cerr << "Accept failed\n";
-            break;
+        #ifdef _WIN32
+            bool acceptError = (clientSocket == INVALID_SOCKET);
+        #else
+            bool acceptError = (clientSocket < 0);
+        #endif
+
+        if (acceptError) {
+
+            if (!running.load()) {
+                break;
+            }
+
+        #ifndef _WIN32
+            if (errno == EINTR)
+                continue;
+        #endif
+            std::cerr << "Accept failed\n";
+            continue;
         }
 
         try {
@@ -93,20 +102,24 @@ void TcpServer::start(ConnectionHandler handler) {
 
     pool.shutdown();
 
-#ifdef _WIN32
-    WSACleanup();
-#endif
+    #ifdef _WIN32
+        WSACleanup();
+    #endif
 }
 
 void TcpServer::stop() {
     if (!running.exchange(false))
         return;
 
-#ifdef _WIN32
-    shutdown(serverSocket, SD_BOTH);
-#else
-    shutdown(serverSocket, SHUT_RDWR);
-#endif
+    if (serverSocket != -1) {
 
-    closeSocket(serverSocket);
+    #ifdef _WIN32
+        shutdown(serverSocket, SD_BOTH);
+    #else
+        shutdown(serverSocket, SHUT_RDWR);
+    #endif
+
+        closeSocket(serverSocket);
+        serverSocket = -1;
+    }
 }
