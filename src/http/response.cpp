@@ -13,6 +13,11 @@ static const char* reasonPhrase(HttpStatus status) {
         case HttpStatus::OK: return "OK";
         case HttpStatus::CREATED: return "Created";
         case HttpStatus::NO_CONTENT: return "No Content";
+        case HttpStatus::MOVED_PERMANENTLY: return "Moved Permanently";
+        case HttpStatus::FOUND: return "Found";
+        case HttpStatus::SEE_OTHER: return "See Other";
+        case HttpStatus::TEMPORARY_REDIRECT: return "Temporary Redirect";
+        case HttpStatus::PERMANENT_REDIRECT: return "Permanent Redirect";
         case HttpStatus::BAD_REQUEST: return "Bad Request";
         case HttpStatus::UNAUTHORIZED: return "Unauthorized";
         case HttpStatus::FORBIDDEN: return "Forbidden";
@@ -55,6 +60,18 @@ void Response::json(const std::string& jsonBody)
 {
     setHeader("Content-Type", "application/json");
     send(jsonBody);
+}
+
+void Response::redirect(const std::string& location,
+                        HttpStatus status)
+{
+    if (sent_) return;
+
+    setStatus(status);
+    setHeader("Location", location);
+
+    setHeader("Content-Type", "text/html");
+    send("");
 }
 
 bool Response::isSent() const {

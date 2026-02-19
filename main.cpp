@@ -30,6 +30,9 @@ int main() {
         res.json(jsonBody);
         });
 
+        app.get("/old", [](Request& req, Response& res) {
+            res.redirect("/new");
+        });
 
         app.post("/echo", [](Request& req, Response& res) {
             res.setStatus(HttpStatus::OK);

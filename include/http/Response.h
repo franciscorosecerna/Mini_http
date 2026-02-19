@@ -23,6 +23,9 @@ public:
     void send(const std::string& body);
     void json(const std::string& jsonBody);
 
+    void redirect(const std::string& location,
+              HttpStatus status = HttpStatus::FOUND);
+
     bool isSent() const;
 
 private:
