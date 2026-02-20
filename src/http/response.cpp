@@ -22,6 +22,7 @@ static const char* reasonPhrase(HttpStatus status) {
         case HttpStatus::UNAUTHORIZED: return "Unauthorized";
         case HttpStatus::FORBIDDEN: return "Forbidden";
         case HttpStatus::NOT_FOUND: return "Not Found";
+        case HttpStatus::METHOD_NOT_ALLOWED: return "Method Not Allowed";
         case HttpStatus::INTERNAL_SERVER_ERROR: return "Internal Server Error";
         default: return "";
     }
@@ -48,8 +49,12 @@ void Response::send(const std::string& body)
 {
     if (sent_) return;
 
-    headers_.try_emplace("Content-Type", "text/plain");
-    headers_.try_emplace("Connection", "close");
+    if (headers_.find("Content-Type") == headers_.end())
+    headers_["Content-Type"] = "text/plain";
+
+    if (headers_.find("Connection") == headers_.end())
+    headers_["Connection"] = "close";
+
 
     std::string response = buildResponse(body);
     write(response);
@@ -123,7 +128,7 @@ void Response::write(const std::string& data)
 #ifndef _WIN32
     if (errno == EINTR) continue;
 #endif
-            throw std::runtime_error("Socket send failed");
+        throw std::runtime_error("Socket send failed");
         }
         totalSent += sent;
     }

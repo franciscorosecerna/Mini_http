@@ -32,5 +32,5 @@ private:
     MiddlewareChain middlewareChain;
     std::unique_ptr<TcpServer> server;
 
-    void handleClient(socket_t clientSocket);
+    bool handleClient(Connection& conn);
 };
