@@ -25,7 +25,7 @@ int main() {
         });
 
         app.get("/old", [](Request& req, Response& res) {
-            res.redirect("/new");
+            res.redirect("/hello");
         });
 
         app.post("/echo", [](Request& req, Response& res) {
