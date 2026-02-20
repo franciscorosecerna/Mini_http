@@ -51,9 +51,16 @@ Request parseRequest(Connection& conn) {
         throw std::runtime_error("Malformed request line");
 
     Request req;
-    req.method  = parseMethod(methodStr);
-    req.path    = path;
+    req.method = parseMethod(methodStr);
     req.version = version;
+
+    size_t qmark = path.find('?');
+    if (qmark != std::string::npos) {
+        req.query = path.substr(qmark + 1);
+        req.path  = path.substr(0, qmark);
+    } else {
+        req.path = path;
+    }
 
     std::string line;
     std::getline(stream, line);

@@ -53,7 +53,7 @@ void Response::send(const std::string& body)
     headers_["Content-Type"] = "text/plain";
 
     if (headers_.find("Connection") == headers_.end())
-    headers_["Connection"] = "keep-alive";
+    headers_["Connection"] = "close";
 
 
     std::string response = buildResponse(body);

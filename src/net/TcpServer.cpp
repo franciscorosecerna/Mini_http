@@ -122,7 +122,7 @@ void TcpServer::acceptLoop(ConnectionHandler handler) {
             continue;
         }
 
-        applyReceiveTimeout(clientSocket, 10);
+        applyReceiveTimeout(clientSocket, 2);
 
         try {
             pool.enqueue([handler, conn = std::make_shared<Connection>(clientSocket)]() {

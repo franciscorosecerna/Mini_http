@@ -8,6 +8,7 @@ struct Request {
     HttpMethod method;
     std::string path;
     std::string version;
+    std::string query;
 
     std::unordered_map<std::string, std::string> headers;
     std::unordered_map<std::string, std::string> params;
@@ -15,7 +16,7 @@ struct Request {
     std::string body;
 
     bool keepAlive() const {
-        auto it = headers.find("Connection");
+        auto it = headers.find("connection");
 
         if (version == "HTTP/1.1") {
             return it == headers.end() || it->second != "close";
