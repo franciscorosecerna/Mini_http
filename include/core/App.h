@@ -23,7 +23,8 @@ public:
     void head(const std::string& path, Handler handler);
 
     void use(Middleware middleware);
-
+    void use(const std::string& prefix, Router& subrouter);
+    
     void listen(int port);
 
 private:

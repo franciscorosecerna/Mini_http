@@ -32,6 +32,21 @@ void App::use(Middleware middleware) {
     middlewareChain.use(middleware);
 }
 
+void App::use(const std::string& prefix, Router& subrouter) {
+    std::string base = prefix;
+    if (!base.empty() && base.back() == '/') {
+        base.pop_back();
+    }
+
+    for (const auto& [method, path, handler] : subrouter.getMountableRoutes()) {
+        std::string fullPath = base;
+        if (!path.empty() && path != "/") {
+            fullPath += path;
+        }
+        router.add(method, fullPath, handler);
+    }
+}
+
 App::App(size_t threads) : count(threads) {}
 
 void App::listen(int port) {
