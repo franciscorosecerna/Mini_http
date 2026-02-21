@@ -12,28 +12,30 @@
 
 #include "httpstatus.h"
 
+namespace mini_http {
 class Response {
-public:
-    explicit Response(socket_t socket);
+    public:
+        explicit Response(socket_t socket);
 
-    void setStatus(HttpStatus status);
-    void setHeader(const std::string& key,
-                   const std::string& value);
+        void setStatus(HttpStatus status);
+        void setHeader(const std::string& key,
+                    const std::string& value);
 
-    void send(const std::string& body);
-    void json(const std::string& jsonBody);
+        void send(const std::string& body);
+        void json(const std::string& jsonBody);
 
-    void redirect(const std::string& location,
-              HttpStatus status = HttpStatus::FOUND);
+        void redirect(const std::string& location,
+                HttpStatus status = HttpStatus::FOUND);
 
-    bool isSent() const;
+        bool isSent() const;
 
-private:
-    socket_t socket_;
-    HttpStatus status_;
-    std::unordered_map<std::string, std::string> headers_;
-    bool sent_;
+    private:
+        socket_t socket_;
+        HttpStatus status_;
+        std::unordered_map<std::string, std::string> headers_;
+        bool sent_;
 
-    std::string buildResponse(const std::string& body) const;
-    void write(const std::string& data);
-};
+        std::string buildResponse(const std::string& body) const;
+        void write(const std::string& data);
+    };
+}

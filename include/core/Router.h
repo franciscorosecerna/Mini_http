@@ -4,45 +4,47 @@
 #include <vector>
 #include <string>
 
-#include "httpmethod.h"
+#include "http/HttpMethod.h"
 #include "route.h"
 
-struct Request;
-class Response;
+namespace mini_http {
+    struct Request;
+    class Response;
 
-struct FlatRoute {
-    HttpMethod method;
-    Route route;
-};
-
-class Router {
-public:
-
-    struct MountableRoute {
+    struct FlatRoute {
         HttpMethod method;
-        std::string path;
-        Handler handler;
+        Route route;
     };
 
-    void add(HttpMethod method,
-             const std::string& path,
-             Handler handler);
+    class Router {
+    public:
 
-    void get(const std::string& path, Handler handler);
-    void post(const std::string& path, Handler handler);
-    void put(const std::string& path, Handler handler);
-    void del(const std::string& path, Handler handler);
-    void patch(const std::string& path, Handler handler);
-    void options(const std::string& path, Handler handler);
-    void head(const std::string& path, Handler handler);
-    bool dispatch(Request& req, Response& res);
+        struct MountableRoute {
+            HttpMethod method;
+            std::string path;
+            Handler handler;
+        };
 
-    std::vector<MountableRoute> getMountableRoutes() const;
-    const std::vector<FlatRoute>& flatRoutes() const { return flat_; }
-private:
-    std::unordered_map<HttpMethod, std::vector<Route>> routes;
-    std::vector<FlatRoute> flat_;
+        void add(HttpMethod method,
+                const std::string& path,
+                Handler handler);
 
-    Route buildRoute(const std::string& path,
-                     Handler handler);
-};
+        void get(const std::string& path, Handler handler);
+        void post(const std::string& path, Handler handler);
+        void put(const std::string& path, Handler handler);
+        void del(const std::string& path, Handler handler);
+        void patch(const std::string& path, Handler handler);
+        void options(const std::string& path, Handler handler);
+        void head(const std::string& path, Handler handler);
+        bool dispatch(Request& req, Response& res);
+
+        std::vector<MountableRoute> getMountableRoutes() const;
+        const std::vector<FlatRoute>& flatRoutes() const { return flat_; }
+    private:
+        std::unordered_map<HttpMethod, std::vector<Route>> routes;
+        std::vector<FlatRoute> flat_;
+
+        Route buildRoute(const std::string& path,
+                        Handler handler);
+    };
+}

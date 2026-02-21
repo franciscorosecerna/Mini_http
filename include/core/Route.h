@@ -5,14 +5,16 @@
 #include <regex>
 #include <functional>
 
-struct Request;
-class Response;
+namespace mini_http {
+    struct Request;
+    class Response;
 
-using Handler = std::function<void(Request&, Response&)>;
+    using Handler = std::function<void(Request&, Response&)>;
 
-struct Route {
-    std::string path;
-    std::regex pattern;
-    std::vector<std::string> paramNames;
-    Handler handler;
-};
+    struct Route {
+        std::string path;
+        std::regex pattern;
+        std::vector<std::string> paramNames;
+        Handler handler;
+    };
+}

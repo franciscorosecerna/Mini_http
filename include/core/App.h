@@ -2,36 +2,39 @@
 
 #include <functional>
 #include "Router.h"
-#include "Middleware.h"
-#include "TcpServer.h"
-#include "Request.h"
-#include "Response.h"
-#include "HttpParser.h"
+#include "net/Middleware.h"
+#include "net/TcpServer.h"
+#include "http/Request.h"
+#include "http/Response.h"
+#include "http/HttpParser.h"
 
-class App {
-public:
-    using Handler = std::function<void(Request&, Response&)>;
+namespace mini_http {
 
-    App(size_t threads = 4);
+    class App {
+    public:
+        using Handler = std::function<void(Request&, Response&)>;
 
-    void get(const std::string& path, Handler handler);
-    void post(const std::string& path, Handler handler);
-    void put(const std::string& path, Handler handler);
-    void del(const std::string& path, Handler handler);
-    void patch(const std::string& path, Handler handler);
-    void options(const std::string& path, Handler handler);
-    void head(const std::string& path, Handler handler);
+        App(size_t threads = 4);
 
-    void use(Middleware middleware);
-    void use(const std::string& prefix, Router& subrouter);
-    
-    void listen(int port);
+        void get(const std::string& path, Handler handler);
+        void post(const std::string& path, Handler handler);
+        void put(const std::string& path, Handler handler);
+        void del(const std::string& path, Handler handler);
+        void patch(const std::string& path, Handler handler);
+        void options(const std::string& path, Handler handler);
+        void head(const std::string& path, Handler handler);
 
-private:
-    size_t count;
-    Router router;
-    MiddlewareChain middlewareChain;
-    std::unique_ptr<TcpServer> server;
+        void use(Middleware middleware);
+        void use(const std::string& prefix, Router& subrouter);
+        
+        void listen(int port);
 
-    bool handleClient(Connection& conn);
-};
+    private:
+        size_t count;
+        Router router;
+        MiddlewareChain middlewareChain;
+        std::unique_ptr<TcpServer> server;
+
+        bool handleClient(Connection& conn);
+    };
+}
