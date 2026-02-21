@@ -210,8 +210,3 @@ async function runAll() {
 }
 
 runAll();
-
-/*
-$sources = Get-ChildItem -Recurse -Path src -Filter *.cpp | ForEach-Object { $_.FullName }
-g++ -std=c++17 -Iinclude -Iinclude/core -Iinclude/http -Iinclude/net C:\Users\Usuario\Desktop\mini_http\test\main.cpp $sources -o myserver.exe -lws2_32
-*/
