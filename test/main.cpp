@@ -1,11 +1,10 @@
-#include "../include/core/App.h"
-#include "../include/core/Router.h"
-#include "../include/http/Request.h"
-#include "../include/http/Response.h"
+#include <mini_http/mini_http.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <algorithm>
+
+using namespace mini_http;
 
 struct User {
     int id;

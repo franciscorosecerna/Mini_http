@@ -7,19 +7,21 @@
 #include <functional>
 #include <atomic>
 
-class ThreadPool {
-public:
-    explicit ThreadPool(size_t threadCount);
-    ~ThreadPool();
+namespace mini_http {
+    class ThreadPool {
+    public:
+        explicit ThreadPool(size_t threadCount);
+        ~ThreadPool();
 
-    void enqueue(std::function<void()> task);
-    void shutdown();
+        void enqueue(std::function<void()> task);
+        void shutdown();
 
-private:
-    std::vector<std::thread> workers;
-    std::queue<std::function<void()>> tasks;
+    private:
+        std::vector<std::thread> workers;
+        std::queue<std::function<void()>> tasks;
 
-    std::mutex mtx;
-    std::condition_variable cv;
-    std::atomic<bool> stop;
-};
+        std::mutex mtx;
+        std::condition_variable cv;
+        std::atomic<bool> stop;
+    };
+}

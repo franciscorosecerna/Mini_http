@@ -1,6 +1,8 @@
 #pragma once
 #include "Request.h"
 
-class Connection;
+namespace mini_http {
+    class Connection;
 
-Request parseRequest(Connection& conn);
+    Request parseRequest(Connection& conn);
+}

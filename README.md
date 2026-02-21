@@ -1,8 +1,13 @@
 A lightweight HTTP server framework written in C++17, inspired by Express.js.
 
+---
+
 ## Usage Example
 
 ```cpp
+#include <mini_http/mini_http.h>
+using namespace mini_http;
+
 int main() {
     Router users;
     users.get("/", getAllUsers);
@@ -29,4 +34,18 @@ int main() {
 
     return 0;
 }
+```
+
+---
+
+## How to use
+
+Requires CMake ≥ 3.16 and a compiler with C++17 support.
+
+```bash
+git clone https://github.com/tuusuario/mini_http.git
+cd mini_http
+cmake -S . -B build
+cmake --build build
+cmake --install build
 ```
