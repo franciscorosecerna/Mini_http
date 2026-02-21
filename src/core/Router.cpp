@@ -65,6 +65,16 @@ bool Router::dispatch(Request& req, Response& res)
     return false;
 }
 
+std::vector<Router::MountableRoute> Router::getMountableRoutes() const {
+    std::vector<MountableRoute> result;
+    for (const auto& [method, routeList] : routes) {
+        for (const auto& route : routeList) {
+            result.push_back({method, route.path, route.handler});
+        }
+    }
+    return result;
+}
+
 Route Router::buildRoute(const std::string& path,
                          Handler handler)
 {
