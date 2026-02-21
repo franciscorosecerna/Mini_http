@@ -43,7 +43,7 @@ int main() {
 Requires CMake ≥ 3.16 and a compiler with C++17 support.
 
 ```bash
-https://github.com/franciscorosecerna/Mini_http.git
+git clone https://github.com/franciscorosecerna/Mini_http.git
 cd mini_http
 cmake -S . -B build
 cmake --build build
