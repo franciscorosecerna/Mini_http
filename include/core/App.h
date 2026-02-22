@@ -1,6 +1,8 @@
 #pragma once
 
 #include <functional>
+#include <iostream>
+#include <csignal>
 #include "Router.h"
 #include "net/Middleware.h"
 #include "net/TcpServer.h"
@@ -27,14 +29,18 @@ namespace mini_http {
         void use(Middleware middleware);
         void use(const std::string& prefix, Router& subrouter);
         
-        void listen(int port);
-
+        void start(int port);
     private:
+        static inline std::atomic<bool> shutdownRequested{false};
+        static inline std::condition_variable shutdownCv;
+        static inline std::mutex shutdownMutex;
         size_t count;
         Router router;
         MiddlewareChain middlewareChain;
         std::unique_ptr<TcpServer> server;
 
         bool handleClient(Connection& conn);
+        void listen(int port);
+        static void signalHandler(int signal);
     };
 }

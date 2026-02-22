@@ -16,7 +16,7 @@ namespace mini_http {
 
         auto next = std::make_shared<std::function<void()>>();
 
-        *next = [&, index, self, next, finalHandler]() {
+        *next = [index, self, next, finalHandler, &req, &res]() {
             if (*index >= self->middlewares.size()) {
                 finalHandler();
                 return;

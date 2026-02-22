@@ -86,4 +86,24 @@ namespace mini_http {
             return false;
         }
     }
+
+    void App::signalHandler(int signal) {
+        if (signal == SIGINT || signal == SIGTERM) {
+            shutdownRequested.store(true);
+            shutdownCv.notify_all();
+        }
+    }
+
+    void App::start(int port) {
+        ::signal(SIGINT,  App::signalHandler);
+        ::signal(SIGTERM, App::signalHandler);
+
+        listen(port);
+
+        std::unique_lock<std::mutex> lock(shutdownMutex);
+        shutdownCv.wait(lock, [] { return shutdownRequested.load(); });
+
+        std::cout << "\nShutting down...\n";
+        server->stop();
+    }
 }
