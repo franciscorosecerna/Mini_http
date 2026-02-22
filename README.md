@@ -30,7 +30,7 @@ int main() {
     app.use("/products", products);
 
     std::cout << "Server running on http://localhost:8080\n";
-    app.listen(8080);
+    app.start(8080);
 
     return 0;
 }
@@ -43,7 +43,7 @@ int main() {
 Requires CMake ≥ 3.16 and a compiler with C++17 support.
 
 ```bash
-git clone https://github.com/tuusuario/mini_http.git
+git clone https://github.com/franciscorosecerna/mini_http.git
 cd mini_http
 cmake -S . -B build
 cmake --build build
