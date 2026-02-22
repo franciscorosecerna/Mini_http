@@ -172,7 +172,7 @@ int main() {
     app.use("/products", products);
 
     std::cout << "Server running on http://localhost:8080\n";
-    app.listen(8080);
+    app.start(8080);
 
     return 0;
 }

@@ -60,7 +60,7 @@ namespace mini_http {
         std::cout << "Server running on port " << port << "\n";
 
         acceptThread = std::thread(&TcpServer::acceptLoop, this, std::move(handler));
-        acceptThread.join();
+        acceptThread.detach();
     }
 
     void TcpServer::stop() {
