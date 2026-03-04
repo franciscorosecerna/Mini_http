@@ -46,26 +46,22 @@ namespace mini_http {
         headers_[key] = value;
     }
 
-    void Response::send(const std::string& body)
-    {
+    void Response::send(const std::string& body) {
         if (sent_) return;
 
         if (headers_.find("Content-Type") == headers_.end())
-        headers_["Content-Type"] = "text/plain";
+            headers_["Content-Type"] = "text/plain";
 
         if (headers_.find("Connection") == headers_.end())
-        headers_["Connection"] = "close";
+            headers_["Connection"] = "close";
 
-
-        std::string response = buildResponse(body);
-        write(response);
+        write(buildResponse(body));
         sent_ = true;
     }
 
-    void Response::json(const std::string& jsonBody)
-    {
+    void Response::json(const nlohmann::json& data) {
         setHeader("Content-Type", "application/json");
-        send(jsonBody);
+        send(data.dump());
     }
 
     void Response::redirect(const std::string& location,
@@ -80,10 +76,75 @@ namespace mini_http {
         send("");
     }
 
+    void Response::ok(const nlohmann::json& data) {
+        setStatus(HttpStatus::OK);
+        json(data);
+    }
+
+    void Response::created(const nlohmann::json& data) {
+        setStatus(HttpStatus::CREATED);
+        json(data);
+    }
+
+    void Response::noContent() {
+        setStatus(HttpStatus::NO_CONTENT);
+        send("");
+    }
+
+    void Response::movedPermanently(const std::string& location) {
+        redirect(location, HttpStatus::MOVED_PERMANENTLY);
+    }
+
+    void Response::found(const std::string& location) {
+        redirect(location, HttpStatus::FOUND);
+    }
+
+    void Response::seeOther(const std::string& location) {
+        redirect(location, HttpStatus::SEE_OTHER);
+    }
+
+    void Response::temporaryRedirect(const std::string& location) {
+        redirect(location, HttpStatus::TEMPORARY_REDIRECT);
+    }
+
+    void Response::permanentRedirect(const std::string& location) {
+        redirect(location, HttpStatus::PERMANENT_REDIRECT);
+    }
+
+    void Response::badRequest(const std::string& message) {
+        sendError(HttpStatus::BAD_REQUEST, message);
+    }
+
+    void Response::unauthorized(const std::string& message) {
+        sendError(HttpStatus::UNAUTHORIZED, message);
+    }
+
+    void Response::forbidden(const std::string& message) {
+        sendError(HttpStatus::FORBIDDEN, message);
+    }
+
+    void Response::notFound(const std::string& message) {
+        sendError(HttpStatus::NOT_FOUND, message);
+    }
+
+    void Response::methodNotAllowed(const std::string& allow, const std::string& message) {
+        setHeader("Allow", allow);
+        sendError(HttpStatus::METHOD_NOT_ALLOWED, message);
+    }
+
+    void Response::internalServerError(const std::string& message) {
+        sendError(HttpStatus::INTERNAL_SERVER_ERROR, message);
+    }
+
     bool Response::isSent() const {
         return sent_;
     }
 
+    void Response::sendError(HttpStatus status, const std::string& message) {
+        setStatus(status);
+        json({{"error", message}});
+    }
+    
     std::string Response::buildResponse(const std::string& body) const
     {
         std::ostringstream ss;
